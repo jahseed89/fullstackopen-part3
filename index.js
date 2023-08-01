@@ -24,6 +24,8 @@ let persons = [
     }
 ]
 
+
+
 app.get('/', (request, response) => {
   response.send('<h1>Welcome to baackend!</h1>')
 })
@@ -31,6 +33,24 @@ app.get('/', (request, response) => {
 app.get('/api/persons', (request, response) => {
     response.end(JSON.stringify(persons))
 })
+
+app.get('/info', (request, response) => {
+    const title = 'Phonebook has info of 2 people';
+    const information = 'Sat Jan 22 2022 22:27 GMT+0200 (Eastem Erupean Starderd Time)';
+  
+    response.send(`
+      <html>
+        <head>
+          <title>${title}</title>
+        </head>
+        <body>
+          <h1>${title}</h1>
+          <p>${information}</p>
+        </body>
+      </html>
+    `);
+  });
+
 
 const PORT = 3006
 app.listen(PORT, () => {
