@@ -1,4 +1,7 @@
-[
+const express = require('express')
+const app = express()
+
+let persons = [
     { 
       "id": 1,
       "name": "Arto Hellas", 
@@ -20,3 +23,16 @@
       "number": "39-23-6423122"
     }
 ]
+
+app.get('/', (request, response) => {
+  response.send('<h1>Welcome to baackend!</h1>')
+})
+
+app.get('/api/persons', (request, response) => {
+    response.end(JSON.stringify(persons))
+})
+
+const PORT = 3006
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`)
+})
