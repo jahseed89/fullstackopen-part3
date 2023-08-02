@@ -21,6 +21,16 @@ let persons = [
       "id": 4,
       "name": "Mary Poppendieck", 
       "number": "39-23-6423122"
+    },
+    { 
+        "id": 5,
+        "name": "Junny Bravo", 
+        "number": "13-33-3984900"
+    },
+    { 
+        "id": 6,
+        "name": "Samini Tempa", 
+        "number": "77-01-474833"
     }
 ]
 
@@ -50,6 +60,18 @@ app.get('/info', (request, response) => {
       </html>
     `);
   });
+
+  app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const person = persons.find(person => person.id === id)
+  
+    if (person) {
+        response.end(JSON.stringify(person))
+    } else {
+      response.status(404).end()
+    }
+  
+  })
 
 
 const PORT = 3006
