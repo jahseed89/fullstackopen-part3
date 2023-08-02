@@ -40,10 +40,10 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
-    // console.log('Method:', request.method)
-    // console.log('Path:  ', request.path)
-    // console.log('Body:  ', request.body)
-    // console.log('---')
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
     response.end(JSON.stringify(persons))
 })
 
@@ -102,9 +102,10 @@ app.post('/api/persons', (request, response) => {
       }
       persons = persons.concat(person)
       response.json(person)
+      console.log(request, response)
 })
 
-app.use(morgan('tiny'))
+app.use(morgan('combined'))
 
 const PORT = 3006
 app.listen(PORT, () => {
