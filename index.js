@@ -34,8 +34,6 @@ let persons = [
     }
 ]
 
-
-
 app.get('/', (request, response) => {
   response.send('<h1>Welcome to baackend!</h1>')
 })
@@ -76,10 +74,34 @@ app.get('/info', (request, response) => {
 // *******Deleting request *******
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
-    notes = persons.filter(person => person.id !== id)
+    persons = persons.filter(person => person.id !== id)
     response.status(204).end()
 })
 
+// ***** Generating an id for post request ***********
+const generateId = () => {
+    const maxId = persons.length > 0
+    ? Math.max(...persons.map(num => num.id))
+    : 0
+    return maxId + 1
+}
+
+// ******* Implementing post request **********
+app.post('/api/persons', (request, response) => {
+    const body = request.body
+    if(!body.name) {
+        response.status(400).json({error: 'Missing Name'})
+    }
+    const person = {
+        name: body.name,
+        number: body.number || false,
+        date: new Date(),
+        id: generateId(),
+      }
+      persons = persons.concat(person)
+
+      response.json(person)
+})
 
 const PORT = 3006
 app.listen(PORT, () => {
