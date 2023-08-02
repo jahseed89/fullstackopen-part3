@@ -73,6 +73,13 @@ app.get('/info', (request, response) => {
   
   })
 
+// *******Deleting request *******
+app.delete('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    notes = persons.filter(person => person.id !== id)
+    response.status(204).end()
+})
+
 
 const PORT = 3006
 app.listen(PORT, () => {
