@@ -1,4 +1,5 @@
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
 let persons = [
@@ -39,6 +40,10 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/persons', (request, response) => {
+    // console.log('Method:', request.method)
+    // console.log('Path:  ', request.path)
+    // console.log('Body:  ', request.body)
+    // console.log('---')
     response.end(JSON.stringify(persons))
 })
 
@@ -48,9 +53,6 @@ app.get('/info', (request, response) => {
   
     response.send(`
       <html>
-        <head>
-          <title>${title}</title>
-        </head>
         <body>
           <h1>${title}</h1>
           <p>${information}</p>
@@ -90,7 +92,7 @@ const generateId = () => {
 app.post('/api/persons', (request, response) => {
     const body = request.body
     if(!body.name) {
-        response.status(400).json({error: 'Missing Name'})
+        response.status(400).json({error: 'name must be unique'})
     }
     const person = {
         name: body.name,
@@ -99,9 +101,10 @@ app.post('/api/persons', (request, response) => {
         id: generateId(),
       }
       persons = persons.concat(person)
-
       response.json(person)
 })
+
+app.use(morgan('tiny'))
 
 const PORT = 3006
 app.listen(PORT, () => {
