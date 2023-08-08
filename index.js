@@ -36,7 +36,7 @@ let persons = [
 ]
 
 app.get('/', (request, response) => {
-  response.send('<h1>Welcome to baackend!</h1>')
+  response.send('<h1>Welcome to baackend Project!</h1>')
 })
 
 app.get('/api/persons', (request, response) => {
