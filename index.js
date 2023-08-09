@@ -98,7 +98,6 @@ app.get('/info', (request, response) => {
   
   })
 
-
 // ***** Generating an id for post request ***********
 const generateId = () => {
     const maxId = persons.length > 0

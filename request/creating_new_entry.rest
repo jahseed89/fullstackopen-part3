@@ -1,0 +1,5 @@
+POST http://localhost:5000/api/persons Content-Type: application/json
+
+{
+"name": "VS code rest client is a pretty handy tool", "number": true
+}
