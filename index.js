@@ -1,82 +1,49 @@
-const express = require('express')
-const dotenv = require('dotenv')
-// const morgan = require('morgan')
-const app = express()
-const cors = require('cors')
+const express = require("express");
+const dotenv = require("dotenv");
+const app = express();
+const cors = require("cors");
 
-dotenv.config()
+dotenv.config();
+
+const Person = require("./models/mongoose");
 
 const requestLogger = (request, response, next) => {
-  console.log('Method:', request.method)
-  console.log('Path:  ', request.path)
-  console.log('Body:  ', request.body)
-  console.log('---')
-  next()
-}
+  console.log("Method:", request.method);
+  console.log("Path:  ", request.path);
+  console.log("Body:  ", request.body);
+  console.log("---");
+  next();
+};
 
 const unknownEndpoint = (request, response) => {
-  response.status(404).send({ error: 'unknown endpoint' })
-}
+  response.status(404).send({ error: "unknown endpoint" });
+};
 
-app.use(cors())
-app.use(express.json())
-app.use(requestLogger)
-app.use(express.static('build'))
+app.use(cors());
+app.use(express.json());
+app.use(requestLogger);
+app.use(express.static("build"));
 
-let persons = [
-    { 
-      id: 1,
-      name: "Arto Hellas", 
-      number: "040-123456"
-    },
-    { 
-      id: 2,
-      name: "Ada Lovelace", 
-      number: "39-44-5323523"
-    },
-    { 
-      id: 3,
-      name: "Dan Abramov", 
-      number: "12-43-234345"
-    },
-    { 
-      id: 4,
-      name: "Mary Poppendieck", 
-      number: "39-23-6423122"
-    },
-    { 
-        id: 5,
-        name: "Junny Bravo", 
-        number: "13-33-3984900"
-    },
-    { 
-        id: 6,
-        name: "Samini Tempa", 
-        number: "77-01-474833"
-    }
-]
+app.get("/", (request, response) => {
+  response.send("<h1>Welcome to baackend Project!</h1>");
+});
 
-app.get('/', (request, response) => {
-  response.send('<h1>Welcome to baackend Project!</h1>')
-})
+app.get("/api/persons", (req, response) => {
+  Person.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => {
+      response.status(500).json({ error: "Internal server error" });
+    });
+});
 
-app.get('/api/persons', (req, res) => {
-  res.json(persons)
-})
+app.get("/info", (request, response) => {
+  const title = "Phonebook has info of 2 people";
+  const information =
+    "Sat Jan 22 2022 22:27 GMT+0200 (Eastem Erupean Starderd Time)";
 
-app.get('/api/persons', (request, response) => {
-    console.log('Method:', request.method)
-    console.log('Path:  ', request.path)
-    console.log('Body:  ', request.body)
-    console.log('---')
-    response.end(JSON.stringify(persons))
-})
-
-app.get('/info', (request, response) => {
-    const title = 'Phonebook has info of 2 people';
-    const information = 'Sat Jan 22 2022 22:27 GMT+0200 (Eastem Erupean Starderd Time)';
-  
-    response.send(`
+  response.send(`
       <html>
         <body>
           <h1>${title}</h1>
@@ -84,81 +51,87 @@ app.get('/info', (request, response) => {
         </body>
       </html>
     `);
-  });
-
-  app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(person => person.id === id)
-  
-    if (person) {
-        response.end(JSON.stringify(person))
-    } else {
-      response.status(404).end()
-    }
-  
-  })
-
-// ***** Generating an id for post request ***********
-const generateId = () => {
-    const maxId = persons.length > 0
-    ? Math.max(...persons.map(num => num.id))
-    : 0
-    return maxId + 1
-}
-
-// ******* Implementing post request **********
-app.post('/api/persons', (request, response) => {
-    const body = request.body
-    if(!body.name) {
-        response.status(400).json({error: 'name must be unique'})
-    }
-    const person = {
-        name: body.name,
-        number: body.number || false,
-        date: new Date(),
-        id: generateId(),
-      }
-      persons = persons.concat(person)
-      response.json(person)
-      console.log(request, response)
-})
-
-// ******* Updating persons Infomation ***********
-app.put('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id);
-  const body = request.body;
-
-  const personToUpdate = persons.find((person) => person.id === id);
-
-  if (!personToUpdate) {
-    return response.status(404).json({ error: 'Person not found' });
-  }
-
-  const updatedPerson = {
-    ...personToUpdate,
-    number: body.number || personToUpdate.number, // Update only the number if provided
-  };
-
-  persons = persons.map((person) =>
-    person.id === id ? updatedPerson : person
-  );
-
-  response.json(updatedPerson);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  // Find the person in the database by ID
+  Person.findById(id)
+    .then((person) => {
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).json({ error: "Person not found" });
+      }
+    })
+    .catch((error) => {
+      response.status(500).json({ error: "Internal server error" });
+    });
+});
+
+// ******* Implementing post request **********
+app.post("/api/persons", (request, response) => {
+  const body = request.body;
+
+  if (!body.name) {
+    return response.status(400).json({ error: "Name must be provided" });
+  }
+
+  const person = new Person({
+    name: body.name,
+    number: body.number || "",
+  });
+
+  person
+    .save()
+    .then((savedPerson) => {
+      response.json(savedPerson);
+    })
+    .catch((error) => {
+      response.status(500).json({ error: "Internal server error" });
+    });
+});
+
+// ******* Updating persons Infomation ***********
+app.put("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+  const body = request.body;
+
+  const updatedPerson = {
+    number: body.number || "",
+  };
+
+  Person.findByIdAndUpdate(id, updatedPerson, { new: true })
+    .then((updatedPerson) => {
+      if (updatedPerson) {
+        response.json(updatedPerson);
+      } else {
+        response.status(404).json({ error: "Person not found" });
+      }
+    })
+    .catch((error) => {
+      response.status(500).json({ error: "Internal server error" });
+    });
+});
 
 // *******Deleting request *******
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  persons = persons.filter(person => person.id !== id)
-  response.status(204).end()
-})
+app.delete("/api/persons/:id", (request, response) => {
+  const id = request.params.id;
+
+  Person.findByIdAndRemove(id)
+    .then(() => {
+      response.status(204).end();
+    })
+    .catch((error) => {
+      response.status(500).json({ error: "Internal server error" });
+    });
+});
 
 // app.use(morgan('combined'))
 
-app.use(unknownEndpoint)
+app.use(unknownEndpoint);
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
-})
+  console.log(`Server running on port ${PORT}`);
+});
