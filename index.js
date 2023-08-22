@@ -127,8 +127,6 @@ app.delete("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
-// app.use(morgan('combined'))
-
 app.use(unknownEndpoint);
 app.use(handleError)
 
