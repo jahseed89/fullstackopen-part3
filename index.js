@@ -44,9 +44,6 @@ app.get("/api/persons", (req, response) => {
     .then((persons) => {
       response.json(persons);
     })
-    // .catch((error) => {
-    //   response.status(500).json({ error: "Internal server error" });
-    // });
 });
 
 app.get("/info", (request, response) => {
