@@ -1,11 +1,10 @@
 const express = require("express");
-const dotenv = require("dotenv");
+require("dotenv").config()
 const app = express();
 const cors = require("cors");
 
-dotenv.config();
 
-const Person = require("./models/mongoose");
+const Person = require("./models/person");
 
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method);
@@ -14,6 +13,15 @@ const requestLogger = (request, response, next) => {
   console.log("---");
   next();
 };
+
+const handleError = (error, request, response, next) => {
+  console.log(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
+}
 
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
@@ -24,18 +32,21 @@ app.use(express.json());
 app.use(requestLogger);
 app.use(express.static("build"));
 
-app.get("/", (request, response) => {
+app.get("/", (request, response, next) => {
   response.send("<h1>Welcome to baackend Project!</h1>");
+  next()
 });
 
 app.get("/api/persons", (req, response) => {
-  Person.find({})
+  Person.
+  
+  find({})
     .then((persons) => {
       response.json(persons);
     })
-    .catch((error) => {
-      response.status(500).json({ error: "Internal server error" });
-    });
+    // .catch((error) => {
+    //   response.status(500).json({ error: "Internal server error" });
+    // });
 });
 
 app.get("/info", (request, response) => {
@@ -53,7 +64,7 @@ app.get("/info", (request, response) => {
     `);
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
   // Find the person in the database by ID
   Person.findById(id)
@@ -64,13 +75,11 @@ app.get("/api/persons/:id", (request, response) => {
         response.status(404).json({ error: "Person not found" });
       }
     })
-    .catch((error) => {
-      response.status(500).json({ error: "Internal server error" });
-    });
+    .catch((error) => next(error))
 });
 
 // ******* Implementing post request **********
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
 
   if (!body.name) {
@@ -87,13 +96,11 @@ app.post("/api/persons", (request, response) => {
     .then((savedPerson) => {
       response.json(savedPerson);
     })
-    .catch((error) => {
-      response.status(500).json({ error: "Internal server error" });
-    });
+    .catch((error) => next(error))
 });
 
 // ******* Updating persons Infomation ***********
-app.put("/api/persons/:id", (request, response) => {
+app.put("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
   const body = request.body;
 
@@ -109,27 +116,24 @@ app.put("/api/persons/:id", (request, response) => {
         response.status(404).json({ error: "Person not found" });
       }
     })
-    .catch((error) => {
-      response.status(500).json({ error: "Internal server error" });
-    });
+    .catch((error) => next(error))
 });
 
 // *******Deleting request *******
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
 
   Person.findByIdAndRemove(id)
     .then(() => {
       response.status(204).end();
     })
-    .catch((error) => {
-      response.status(500).json({ error: "Internal server error" });
-    });
+    .catch((error) => next(error));
 });
 
 // app.use(morgan('combined'))
 
 app.use(unknownEndpoint);
+app.use(handleError)
 
 const PORT = process.env.PORT;
 app.listen(PORT, () => {
