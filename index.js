@@ -123,6 +123,30 @@ app.post('/api/persons', (request, response) => {
       console.log(request, response)
 })
 
+// ******* Updating persons Infomation ***********
+app.put('/api/persons/:id', (request, response) => {
+  const id = Number(request.params.id);
+  const body = request.body;
+
+  const personToUpdate = persons.find((person) => person.id === id);
+
+  if (!personToUpdate) {
+    return response.status(404).json({ error: 'Person not found' });
+  }
+
+  const updatedPerson = {
+    ...personToUpdate,
+    number: body.number || personToUpdate.number, // Update only the number if provided
+  };
+
+  persons = persons.map((person) =>
+    person.id === id ? updatedPerson : person
+  );
+
+  response.json(updatedPerson);
+});
+
+
 // *******Deleting request *******
 app.delete('/api/persons/:id', (request, response) => {
   const id = Number(request.params.id)
